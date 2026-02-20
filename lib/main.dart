@@ -9,15 +9,19 @@ class TaskManagerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-      home: const HomeScreen(), // App yahan se shuru hogi
+      theme: ThemeData(primarySwatch: Colors.red, useMaterial3: true),
+      home: const HomeScreen(),
     );
   }
 }
 
-// ==========================================
-// SCREEN 1: HOME SCREEN (Saari list yahan dikhegi)
-// ==========================================
+// Model Class: Ye batayega ki task ka naam kya hai aur wo khatam hua ya nahi
+class Task {
+  String title;
+  bool isDone;
+  Task({required this.title, this.isDone = false});
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -26,54 +30,67 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Ye hai hamari list jisme saare kaam save honge
-  List<String> tasks = ["Flutter Seekhna", "GitHub Action Setup", "Naya APK Banana"];
+  // 1. PEHLE SE LIKHE TASKS HATA DIYE (Ab ye khali shuru hoga)
+  List<Task> myTasks = []; 
 
-  // FUNCTION: Naya task list mein jodne ke liye
-  void _addNewTask(String taskTitle) {
+  void _addNewTask(String title) {
     setState(() {
-      tasks.add(taskTitle);
+      myTasks.add(Task(title: title)); // Naya task hamesha 'isDone = false' ke saath aayega
+    });
+  }
+
+  // 2. DELETE FUNCTION: List se task hatane ke liye
+  void _deleteTask(int index) {
+    setState(() {
+      myTasks.removeAt(index);
+    });
+  }
+
+  // 3. TOGGLE FUNCTION: Tick mark lagane ya hatane ke liye
+  void _toggleTask(int index) {
+    setState(() {
+      myTasks[index].isDone = !myTasks[index].isDone;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Tasks')),
-      
-      // Agar list khali hai toh message dikhao, nahi toh list dikhao
-      body: tasks.isEmpty 
-        ? const Center(child: Text('Abhi koi kaam nahi hai!'))
+      appBar: AppBar(title: const Text('My Smart Tasks')),
+      body: myTasks.isEmpty 
+        ? const Center(child: Text('Koi task nahi hai. + dabayein!'))
         : ListView.builder(
-            itemCount: tasks.length,
+            itemCount: myTasks.length,
             itemBuilder: (context, index) {
               return ListTile(
-                leading: const Icon(Icons.check_circle_outline),
-                title: Text(tasks[index]),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                
-                // FUNCTION: Task par click karne se SCREEN 3 par jana
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DetailScreen(taskName: tasks[index]),
-                    ),
-                  );
-                },
+                // Leading: Yahan tick karne ka logic hai
+                leading: IconButton(
+                  icon: Icon(
+                    myTasks[index].isDone ? Icons.check_circle : Icons.radio_button_unchecked,
+                    color: myTasks[index].isDone ? Colors.green : Colors.grey,
+                  ),
+                  onPressed: () => _toggleTask(index),
+                ),
+                title: Text(
+                  myTasks[index].title,
+                  style: TextStyle(
+                    decoration: myTasks[index].isDone ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+                // Trailing: DELETE BUTTON yahan lagaya hai
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => _deleteTask(index),
+                ),
               );
             },
           ),
-
-      // BUTTON: Plus button dabane par SCREEN 2 par jana
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          // SCREEN 2 se wapas aane par result ka wait karna
           final result = await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AddTaskScreen()),
           );
-          // Agar user ne naya task likha hai, toh use list mein add karo
           if (result != null) _addNewTask(result);
         },
         child: const Icon(Icons.add),
@@ -82,20 +99,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ==========================================
-// SCREEN 2: ADD TASK SCREEN (Naya kaam likhne ke liye)
-// ==========================================
+// --- ADD TASK SCREEN (Wahi purani wali) ---
 class AddTaskScreen extends StatefulWidget {
   const AddTaskScreen({super.key});
-
   @override
   State<AddTaskScreen> createState() => _AddTaskScreenState();
 }
 
 class _AddTaskScreenState extends State<AddTaskScreen> {
-  // Controller: Likhne wale box ke text ko control karne ke liye
   final TextEditingController _taskController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -106,64 +118,13 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           children: [
             TextField(
               controller: _taskController,
-              decoration: const InputDecoration(
-                labelText: 'Task ka naam likhein',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: 'Kya kaam hai?', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 20),
-            
-            // FUNCTION: Save button dabane par wapas SCREEN 1 par jana data lekar
             ElevatedButton(
-              style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
-              onPressed: () {
-                if (_taskController.text.isNotEmpty) {
-                  Navigator.pop(context, _taskController.text);
-                }
-              },
+              onPressed: () => Navigator.pop(context, _taskController.text),
               child: const Text('Save Task'),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ==========================================
-// SCREEN 3: DETAIL SCREEN (Task ki detail dekhne ke liye)
-// ==========================================
-class DetailScreen extends StatelessWidget {
-  final String taskName; // Pehli screen se aya hua data
-
-  const DetailScreen({super.key, required this.taskName});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Task Details')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.assignment, size: 100, color: Colors.blue),
-            const SizedBox(height: 20),
-            Text(
-              'Aapka Task:',
-              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-            ),
-            Text(
-              taskName,
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 40),
-            
-            // FUNCTION: Piche jane ke liye button
-            TextButton.icon(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.backspace),
-              label: const Text('Wapas Jayein'),
-            )
           ],
         ),
       ),
