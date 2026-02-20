@@ -19,6 +19,10 @@ jobs:
         with:
           channel: 'stable'
 
+      # Ye step bahut zaruri hai agar aapne android folder upload nahi kiya hai
+      - name: Initialize Flutter Project
+        run: flutter create . --platforms=android --project-name=mera_flutter_app
+
       - name: Build APK
         run: flutter build apk --release
 
