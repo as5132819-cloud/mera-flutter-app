@@ -19,11 +19,13 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Get Dependencies
-        run: flutter pub get
+      - name: Initialize Flutter Project
+        # Ye line sari missing files (android folder) bana degi
+        run: flutter create . --platforms=android --project-name=mera_flutter_app
 
       - name: Build APK
-        run: flutter build apk --debug # Debug APK jaldi banti hai
+        # Hum seedha build karenge, dependencies apne aap handle ho jayengi
+        run: flutter build apk --debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
