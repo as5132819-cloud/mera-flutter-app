@@ -1,79 +1,80 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(const MySmartApp());
+void main() => runApp(const WelcomeApp());
 
-class MySmartApp extends StatelessWidget {
-  const MySmartApp({super.key});
+class WelcomeApp extends StatelessWidget {
+  const WelcomeApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.indigo), // Naya Indigo theme
-      home: const CounterPage(),
+      theme: ThemeData(primarySwatch: Colors.teal),
+      home: const InputPage(),
     );
   }
 }
 
-class CounterPage extends StatefulWidget {
-  const CounterPage({super.key});
+class InputPage extends StatefulWidget {
+  const InputPage({super.key});
 
   @override
-  State<CounterPage> createState() => _CounterPageState();
+  State<InputPage> createState() => _InputPageState();
 }
 
-class _CounterPageState extends State<CounterPage> {
-  int _counter = 0;
+class _InputPageState extends State<InputPage> {
+  // Controller: Ye user ke likhe hue text ko pakad kar rakhta hai
+  final TextEditingController _nameController = TextEditingController();
+  String _greetingMessage = "";
 
-  void _update(int val) {
+  void _sayHello() {
     setState(() {
-      if (val == 0) _counter = 0; // Reset
-      else _counter += val;       // Add ya Subtract
+      if (_nameController.text.isEmpty) {
+        _greetingMessage = "Pehle apna naam toh likhiye!";
+      } else {
+        _greetingMessage = "Namaste, ${_nameController.text}! \nKaise hain aap?";
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Smart Counter Pro')),
-      body: Center(
+      appBar: AppBar(title: const Text('Welcome App')),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Current Value:', style: TextStyle(fontSize: 20)),
-            Text(
-              '$_counter',
-              style: const TextStyle(fontSize: 100, fontWeight: FontWeight.bold, color: Colors.indigo),
-            ),
-            const SizedBox(height: 30), // Beech mein gap ke liye
+            const Text('Apna Naam Yahan Likhein:', style: TextStyle(fontSize: 18)),
+            const SizedBox(height: 15),
             
-            // Buttons ki Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Minus Button
-                ElevatedButton(
-                  onPressed: () => _update(-1),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-                  child: const Icon(Icons.remove, color: Colors.white),
-                ),
-                const SizedBox(width: 20),
-                
-                // Reset Button
-                ElevatedButton(
-                  onPressed: () => _update(0),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-                  child: const Text('RESET', style: TextStyle(color: Colors.white)),
-                ),
-                const SizedBox(width: 20),
-                
-                // Plus Button
-                ElevatedButton(
-                  onPressed: () => _update(1),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                  child: const Icon(Icons.add, color: Colors.white),
-                ),
-              ],
+            // Input Box
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'Jaise: Rahul',
+                prefixIcon: Icon(Icons.person),
+              ),
+            ),
+            
+            const SizedBox(height: 20),
+            
+            // Button
+            ElevatedButton(
+              onPressed: _sayHello,
+              style: ElevatedButton.styleFrom(minimumSize: const Size(200, 50)),
+              child: const Text('Magic Dekhein'),
+            ),
+            
+            const SizedBox(height: 40),
+            
+            // Output Message
+            Text(
+              _greetingMessage,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.teal),
             ),
           ],
         ),
